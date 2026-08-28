@@ -7,7 +7,9 @@ import base64
 
 app = Flask(__name__)
 
-# قالب HTML بتصميم بسيط
+# نترك الكائن باسم application أيضاً عشان Vercel يتعرف عليه مباشرة
+application = app
+
 HTML_TEMPLATE = '''
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
@@ -43,12 +45,10 @@ def home():
     plot_url = None
     if request.method == 'POST':
         try:
-            # استقبال البيانات من المستخدم وتحويلها لأرقام
             raw_data = request.form['data']
             values = [float(x.strip()) for x in raw_data.split(',')]
             months = [f"شهر {i+1}" for i in range(len(values))]
 
-            # عمل التحليل والرسم البياني
             plt.figure(figsize=(6, 4))
             plt.plot(months, values, marker='o', color='green', linewidth=2)
             plt.title('تحليل البيانات التلقائي')
@@ -56,13 +56,12 @@ def home():
             plt.ylabel('القيمة')
             plt.grid(True)
 
-            # حفظ الرسمة كصورة داخل الذاكرة (Base64) لعرضها مباشرة
             img = io.BytesIO()
             plt.savefig(img, format='png', bbox_inches='tight')
             img.seek(0)
             plot_url = base64.b64encode(img.getvalue()).decode('utf8')
             plt.close()
-        except Exception as e:
+        except Exception:
             pass
 
     return render_template_string(HTML_TEMPLATE, plot_url=plot_url)
